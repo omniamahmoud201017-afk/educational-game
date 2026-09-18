@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>لعبة المرونة السلوكية - لنبدأ المغامرة</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <style>
+        body {
+            font-family: 'Cairo', Tahoma, sans-serif;
+            background: linear-gradient(135deg, #74b9ff, #dfe6e9);
+            text-align: center;
+            margin: 0;
+            padding: 10px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .game-container {
+            width: 100%;
+            max-width: 900px;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+            box-sizing: border-box;
+            max-height: 95vh;
+            overflow-y: auto;
+        }
+        h1, h2, h3 { color: #2d3436; margin: 10px 0; }
+        
+        #start-screen input {
+            padding: 12px;
+            font-size: 18px;
+            border: 2px solid #b2bec3;
+            border-radius: 10px;
+            width: 60%;
+            margin: 15px 0;
+            text-align: center;
+        }
+        .btn {
+            background-color: #0984e3;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            font-size: 16px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+            margin: 5px;
+        }
+        .btn:hover { background-color: #74b9ff; }
+
+        .assistant-box {
+            background: #f1f2f6;
+            border: 2px dashed #0984e3;
+            border-radius: 15px;
+            padding: 12px;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+        }
+        .assistant-avatar {
+            width: 55px;
+            height: 55px;
+            background: #dfe6e9;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            animation: floatRobot 2s ease-in-out infinite;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        @keyframes floatRobot {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+        .assistant-text { font-size: 16px; color: #2c3e50; font-weight: bold; text-align: right; flex-grow: 1; }
+
+        .speak-btn {
+            background-color: #00b894;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: bold;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            margin-top: 5px;
+            transition: 0.3s;
+        }
+        .speak-btn:hover { background-color: #55efc4; color: #2d3436; }
+
+        .question-text {
+            font-size: 20px;
+            color: #2d3436;
+            margin-bottom: 15px;
+            font-weight: bold;
+        }
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+        .option-card {
+            border: 3px solid #dfe6e9;
+            border-radius: 12px;
+            cursor: pointer;
+            overflow: hidden;
+            transition: 0.3s;
+            background: #fff;
+        }
+        .option-card:hover {
+            border-color: #0984e3;
+            transform: scale(1.03);
+        }
+        .option-card img {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            display: block;
+        }
+        #feedback {
+            font-size: 17px;
+            font-weight: bold;
+            margin: 10px 0;
+            min-height: 25px;
+        }
+        .correct { color: #00b894; }
+        .wrong { color: #d63031; }
+
+        .report-header {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 5px;
+        }
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .metric-card {
+            background: #fff;
+            border: 2px solid #dfe6e9;
+            border-radius: 10px;
+            padding: 8px;
+            text-align: center;
+            box-shadow: 0 3px 5px rgba(0,0,0,0.05);
+        }
+        .metric-card.yellow { border-color: #f1c40f; color: #d35400; }
+        .metric-card.green { border-color: #00b894; color: #00b894; }
+        .metric-card.blue { border-color: #74b9ff; color: #0984e3; }
+        .metric-card.purple { border-color: #a29bfe; color: #6c5ce7; }
+        .metric-value { font-size: 17px; font-weight: bold; margin-top: 3px; }
+
+        .report-box {
+            background: #f8f9fa;
+            border: 2px solid #6c5ce7;
+            border-radius: 12px;
+            padding: 12px;
+            text-align: right;
+            margin-bottom: 15px;
+        }
+        .report-box-title {
+            font-weight: bold;
+            color: #6c5ce7;
+            margin-bottom: 6px;
+            font-size: 15px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .report-box-text {
+            font-size: 13px;
+            color: #2d3436;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        th, td {
+            padding: 8px;
+            text-align: center;
+            border-bottom: 1px solid #dfe6e9;
+            font-size: 13px;
+        }
+        th { background-color: #f1f2f6; color: #2d3436; }
+        .success-text { color: #00b894; font-weight: bold; }
+        .error-badge { color: #d63031; font-weight: bold; }
+        
+        .report-actions {
+            margin-top: 15px;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+
+    <div class="game-container" id="game-container-box">
+        <!-- 1. شاشة البداية -->
+        <div id="start-screen">
+            <h1>🌸 لعبة المرونة السلوكية 🌸</h1>
+            <p>برنامج تفاعلي ممتع - يرجى إدخال اسم البطل:</p>
+            <input type="text" id="child-name" placeholder="اكتب اسم البطل هنا..."><br>
+            <button class="btn" onclick="startGame()">لنبدأ المغامرة 🚀</button>
+        </div>
+
+        <!-- 2. شاشة التحدي -->
+        <div id="game-screen" class="hidden">
+            <h1>حديقة الفرح (تحدي المرونة الذكي)</h1>
+            
+            <div class="assistant-box">
+                <div class="assistant-avatar">
+                    <svg width="45" height="45" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M 25 45 Q 25 15 50 15 Q 75 15 75 45 Q 75 55 65 60 Q 50 65 35 60 Q 25 55 25 45 Z" fill="#b2bec3" />
+                        <path d="M 32 30 Q 32 22 50 22 Q 68 22 68 30 Q 68 50 50 50 Q 32 50 32 30 Z" fill="#2d3436" />
+                        <circle cx="42" cy="35" r="5" fill="#81ecec" />
+                        <circle cx="58" cy="35" r="5" fill="#81ecec" />
+                        <path d="M 45 42 Q 50 47 55 42 Z" fill="#ffffff" />
+                        <path d="M 35 65 Q 35 58 50 58 Q 65 58 65 65 L 70 85 Q 70 90 50 90 Q 30 90 30 85 Z" fill="#b2bec3" />
+                        <circle cx="50" cy="72" r="3" fill="#636e72" />
+                    </svg>
+                </div>
+                <div>
+                    <div class="assistant-text" id="mizo-speech">أهلاً بك! أنا ميزو أرافقك اليوم لنخوض مغامرة رائعة معاً.</div>
+                    <button class="speak-btn" onclick="repeatLastSpeech()">🔊 إعادة التوجيه الصوتي</button>
+                </div>
+            </div>
+
+            <div id="question-container" class="question-text">السؤال سيظهر هنا</div>
+            <div class="options-grid" id="options-container"></div>
+            <div id="feedback"></div>
+            <button class="btn" id="next-btn" onclick="nextQuestion()" style="display:none;">السؤال التالي</button>
+        </div>
+
+        <!-- 3. شاشة التقرير التربوي والسلوكي -->
+        <div id="report-screen" class="hidden">
+            <div class="report-header">
+                <span style="font-size: 24px;">🏆</span>
+                <h2 id="report-title" style="margin:0; color: #0984e3;">تقرير أداء البطل في المغامرة</h2>
+            </div>
+            <p style="color: #636e72; font-size: 12px; margin-top: 2px;">تحليل المهارات التكيفية، سرعة الاستجابة، ونسبة النجاح بعد احتساب الأخطاء</p>
+            
+            <div class="metrics-grid">
+                <div class="metric-card yellow">
+                    <div style="font-size: 11px;">النقاط</div>
+                    <div class="metric-value" id="total-points">0</div>
+                </div>
+                <div class="metric-card green">
+                    <div style="font-size: 11px;">نسبة النجاح</div>
+                    <div class="metric-value" id="success-rate">0%</div>
+                </div>
+                <div class="metric-card blue">
+                    <div style="font-size: 11px;">متوسط التردد</div>
+                    <div class="metric-value" id="avg-latency">0 ثانية</div>
+                </div>
+                <div class="metric-card purple">
+                    <div style="font-size: 11px;">مؤشر المرونة</div>
+                    <div class="metric-value" id="rigidity-index">عالية</div>
+                </div>
+            </div>
+
+            <!-- صندوق التقرير التربوي والسلوكي -->
+            <div class="report-box">
+                <div class="report-box-title">🌟 1. تقييم أداء البطل الاستراتيجي والمعرفي</div>
+                <div class="report-box-text" id="report-eval"></div>
+                
+                <div class="report-box-title" style="margin-top: 8px;">💡 2. التوصيات التربوية والتحفيزية</div>
+                <div class="report-box-text" id="report-recs"></div>
+
+                <div class="report-box-title" style="margin-top: 8px;">🎯 3. خطة التحديات القادمة لتطوير المهارات</div>
+                <div class="report-box-text" id="report-plan"></div>
+            </div>
+
+            <div style="text-align: right; font-weight: bold; margin-bottom: 3px; color: #2d3436; font-size: 13px;">سجل الاستجابة التفاعلية لكل سيناريو بيئي:</div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الموقف البيئي</th>
+                        <th>مؤشر المعالجة البصرية</th>
+                        <th>أخطاء التردد</th>
+                        <th>الحالة المعرفية</th>
+                    </tr>
+                </thead>
+                <tbody id="report-table-body"></tbody>
+            </table>
+
+            <div class="report-actions">
+                <button class="btn" style="background-color: #0984e3;" onclick="downloadReportImage()">📷 تصدير كصورة كاملة</button>
+                <button class="btn" style="background-color: #27ae60;" onclick="downloadExcelReport()">📊 تحميل كملف Excel</button>
+                <button class="btn" style="background-color: #e67e22;" onclick="location.reload()">🔄 إعادة المغامرة</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let childName = "";
+        let sessionStartTime, questionStartTime;
+        let currentQuestionIndex = 0;
+        let lastSpokenText = "";
+        let latencies = []; 
+        let successRateVal = 0;
+        let totalPoints = 0;
+        let avgLatency = 0;
+        
+        let questionData = [
+            { id: 1, title: "الدخول للحديقة", question: "ما السلوك المناسب للدخول إلى الحدائق العامة؟", wrongCount: 0, isCorrect: false, options: ["q1_opt1.png.jpg", "q1_opt2.png.jpg", "q1_opt3.png.jpg"], correctOpt: 0, hint: "فكر يا بطل، من يحمل التذكرة ويدخل بفرح من البوابة الرئيسية؟" },
+            { id: 2, title: "التعامل مع القمامة", question: "ماذا يتوجب عليك فعله بالقمامة في الحديقة؟", wrongCount: 0, isCorrect: false, options: ["q2_opt1.png.jpg", "q2_opt2.png.jpg", "q2_opt3.png.jpg"], correctOpt: 0, hint: "تذكر نظافة الحديقة؛ أين نضع مخلفاتنا وأوراقنا الفارغة؟" },
+            { id: 3, title: "مكان الجلوس", question: "ما المكان المخصص للجلوس في الحديقة؟", wrongCount: 0, isCorrect: false, options: ["q3_opt1.png.jpg", "q3_opt2.png.jpg", "q3_opt3.png.jpg"], correctOpt: 1, hint: "ابحث عن المقعد الخشبي المريح للجلوس." },
+            { id: 4, title: "التفاعل مع الزهور", question: "ما السلوك المناسب للتفاعل مع الزهور؟", wrongCount: 0, isCorrect: false, options: ["q4_opt1.png.jpg", "q4_opt2.png.jpg", "q4_opt3.png.jpg"], correctOpt: 2, hint: "لا نقوم بقطف الورود، بل نستمتع بجمالها وننظر إليها بإعجاب وتقدير!" },
+            { id: 5, title: "التفاعل مع الأشجار", question: "ما السلوك المناسب للتفاعل مع الأشجار؟", wrongCount: 0, isCorrect: false, options: ["q5_opt1.png.jpg", "q5_opt2.png.jpg", "q5_opt3.png.jpg"], correctOpt: 1, hint: "الأشجار صديقتنا؛ نصورها بهدوء ونتأملها دون أن نكسر أغصانها." }
+        ];
+
+        const arabicNumbersText = ["السؤال الأول", "السؤال الثاني", "السؤال الثالث", "السؤال الرابع", "السؤال الخامس"];
+
+        function playSuccessSound() {
+            try {
+                const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+                let now = audioCtx.currentTime;
+                let notes = [523.25, 659.25, 783.99, 1046.50];
+                notes.forEach((freq, index) => {
+                    let osc = audioCtx.createOscillator();
+                    let gain = audioCtx.createGain();
+                    osc.type = "sine";
+                    osc.frequency.value = freq;
+                    gain.gain.setValueAtTime(0.2, now + index * 0.1);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + index * 0.1 + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start(now + index * 0.1);
+                    osc.stop(now + index * 0.1 + 0.3);
+                });
+            } catch (e) {
+                console.log("Audio error");
+            }
+        }
+
+        function speak(text) {
+            lastSpokenText = text;
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                let utterance = new SpeechSynthesisUtterance(text);
+                utterance.rate = 0.9;
+                utterance.pitch = 1.1;
+
+                let voices = window.speechSynthesis.getVoices();
+                let arabicVoice = voices.find(v => v.lang === 'ar-SA' || v.lang === 'ar-EG' || v.lang.toLowerCase().includes('ar'));
+                if (arabicVoice) { utterance.voice = arabicVoice; }
+                utterance.lang = 'ar-SA';
+                window.speechSynthesis.speak(utterance);
+            }
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.onvoiceschanged = () => { window.speechSynthesis.getVoices(); };
+        }
+
+        function repeatLastSpeech() {
+            if (lastSpokenText) { speak(lastSpokenText); }
+        }
+
+        function startGame() {
+            const nameInput = document.getElementById("child-name").value.trim();
+            if (nameInput === "") {
+                alert("الرجاء إدخال اسم البطل أولاً!");
+                return;
+            }
+            childName = nameInput;
+            document.getElementById("start-screen").classList.add("hidden");
+            document.getElementById("game-screen").classList.remove("hidden");
+            sessionStartTime = new Date();
+            
+            let welcomeMsg = `أهلاً بك يا بطلنا الرائع ${childName} في مغامرة المرونة السلوكية. أنا ميزو أرافقك الآن.`;
+            document.getElementById("mizo-speech").innerText = welcomeMsg;
+            speak(welcomeMsg);
+            
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            questionStartTime = new Date(); 
+            let q = questionData[currentQuestionIndex];
+            let questionNumArabic = arabicNumbersText[currentQuestionIndex];
+            let fullQuestionText = `${questionNumArabic}. ${q.question}`;
+            
+            document.getElementById("question-container").innerText = fullQuestionText;
+            document.getElementById("mizo-speech").innerText = fullQuestionText;
+            speak(fullQuestionText);
+
+            let optionsContainer = document.getElementById("options-container");
+            optionsContainer.innerHTML = "";
+            document.getElementById("feedback").innerText = "";
+            document.getElementById("next-btn").style.display = "none";
+
+            q.options.forEach((imgSrc, index) => {
+                let card = document.createElement("div");
+                card.className = "option-card";
+                card.onclick = () => checkAnswer(index);
+
+                let img = document.createElement("img");
+                img.src = imgSrc;
+                img.alt = "خيار " + (index + 1);
+
+                card.appendChild(img);
+                optionsContainer.appendChild(card);
+            });
+        }
+
+        function checkAnswer(selectedIndex) {
+            let questionEndTime = new Date();
+            let latencySec = (questionEndTime - questionStartTime) / 1000;
+            latencies.push(latencySec);
+
+            let q = questionData[currentQuestionIndex];
+            let feedback = document.getElementById("feedback");
+            let mizoText = "";
+
+            if (selectedIndex === q.correctOpt) {
+                q.isCorrect = true;
+                feedback.innerText = "إجابة موفقة وسليمة! 🌟";
+                feedback.className = "correct";
+                mizoText = `ممتاز يا ${childName}! لقد أظهرت استجابة بصرية رائعة.`;
+                document.getElementById("mizo-speech").innerText = mizoText;
+                
+                speak(mizoText);
+                playSuccessSound();
+                document.getElementById("next-btn").style.display = "inline-block";
+            } else {
+                q.wrongCount++;
+                feedback.innerText = "خطأ بسيط، انتبه للتلميح وحاول مجدداً! ❌";
+                feedback.className = "wrong";
+                
+                mizoText = `تلميح مرن يا ${childName}: ${q.hint}`;
+                document.getElementById("mizo-speech").innerText = mizoText;
+                speak(mizoText);
+            }
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < questionData.length) {
+                loadQuestion();
+            } else {
+                showReport();
+            }
+        }
+
+        function showReport() {
+            document.getElementById("game-screen").classList.add("hidden");
+            document.getElementById("report-screen").classList.remove("hidden");
+            document.getElementById("report-title").innerText = `تقرير مغامرة البطل (${childName})`;
+
+            let totalWrong = questionData.reduce((sum, q) => sum + q.wrongCount, 0);
+            let correctCount = questionData.filter(q => q.isCorrect).length;
+            totalPoints = correctCount * 15;
+            
+            let totalAttempts = questionData.length + totalWrong;
+            successRateVal = Math.max(10, Math.round((correctCount / totalAttempts) * 100));
+
+            avgLatency = (latencies.reduce((a, b) => a + b, 0) / latencies.length).toFixed(1);
+
+            document.getElementById("total-points").innerText = totalPoints;
+            document.getElementById("success-rate").innerText = `${successRateVal}%`;
+            document.getElementById("avg-latency").innerText = `${avgLatency} ثانية`;
+
+            let rigidityIndexText = totalWrong <= 1 ? "عالية وممتازة" : totalWrong <= 3 ? "جيدة ومتطورة" : "تحتاج تدريب إضافي";
+            document.getElementById("rigidity-index").innerText = rigidityIndexText;
+
+            let tableBody = document.getElementById("report-table-body");
+            tableBody.innerHTML = "";
+
+            questionData.forEach((q, idx) => {
+                let processingStatus = latencies[idx] < 4 ? "سريعة وتلقائية" : "متوسطة الحذر";
+                let cognitiveState = q.wrongCount === 0 ? "مرونة متكاملة ✓" : "تطلب تلميح توجيهي";
+                let row = `<tr>
+                    <td>${q.title}</td>
+                    <td>${processingStatus} (${latencies[idx]}ث)</td>
+                    <td><span class="error-badge">${q.wrongCount}</span></td>
+                    <td><span class="success-text">${cognitiveState}</span></td>
+                </tr>`;
+                tableBody.innerHTML += row;
+            });
+
+            let reportEval = "";
+            let reportRecs = "";
+            let reportPlan = "";
+
+            if (totalWrong === 0) {
+                reportEval = `أظهر البطل ${childName} تفوقاً كاملاً بنسبة نجاح بلغت ${successRateVal}%! تمتع بقدرة مذهلة على المعالجة البصرية السريعة واتخاذ القرارات البيئية المرنة دون أي أخطاء أو تردد يذكر.`;
+                reportRecs = `الاستمرار في تحفيز البطل عبر ترقيته لمستويات مغامرات أعمق وأكثر تفاعلية مع أصدقائه.`;
+                reportPlan = `منح شارة "نجم المرونة الذهنية الكبرى" والاحتفال بهذا الإنجاز المتميز.`;
+            } else if (successRateVal >= 60) {
+                reportEval = `حقق البطل ${childName} نسبة نجاح ممتازة بلغت ${successRateVal}% بعد اجتياز المحاولات بنجاح، مع إظهار تفاعل إيجابي وسريع مع تلميحات المساعد ميزو عند مواجهة خيارات متعددة.`;
+                reportRecs = `تعزيز التركيز البصري في المواقف المشابهة وتقسيم الأهداف إلى خطوات بسيطة وممتعة لزيادة الثقة بالنفس.`;
+                reportPlan = `ممارسة أنشطة ترفيهية تفاعلية مشابهة لترسيخ مفاهيم المرونة السلوكية بشكل مستمر.`;
+            } else {
+                reportEval = `أتم البطل ${childName} المغامرة بنسبة نجاح بلغت ${successRateVal}% بعد تسجيل بعض أخطاء التردد، مما يوضح أهمية تعزيز المهارات التكيفية بدعم وممارسة ممتعة.`;
+                reportRecs = `استخدام صور وقصص بصرية بسيطة تحاكي الحديقة العامة لتكرار عرض السلوكيات الصحيحة بأسلوب شيق.`;
+                reportPlan = `إعادة خوض المغامرة مع توفير بيئة تشجيعية هادئة لتعزيز التفاعل الإيجابي وكسر الجمود السلوكي.`;
+            }
+
+            document.getElementById("report-eval").innerText = reportEval;
+            document.getElementById("report-recs").innerText = reportRecs;
+            document.getElementById("report-plan").innerText = reportPlan;
+
+            let finalMsg = `تم إصدار تقرير المغامرة بنجاح للبطل ${childName} بنسبة نجاح ${successRateVal}%.`;
+            document.getElementById("mizo-speech").innerText = finalMsg;
+            speak(finalMsg);
+        }
+
+        // دالة تصدير التقرير كاملاً كصورة دون قص
+        function downloadReportImage() {
+            const reportElement = document.getElementById("game-container-box");
+            
+            // إلغاء التمرير الداخلي مؤقتاً لضمان التقاط كامل الارتفاع
+            let originalOverflow = reportElement.style.overflowY;
+            let originalMaxHeight = reportElement.style.maxHeight;
+            reportElement.style.overflowY = 'visible';
+            reportElement.style.maxHeight = 'none';
+
+            html2canvas(reportElement, { 
+                scale: 2, 
+                useCORS: true,
+                windowWidth: reportElement.scrollWidth,
+                windowHeight: reportElement.scrollHeight
+            }).then(canvas => {
+                // استعادة الخصائص الأصلية
+                reportElement.style.overflowY = originalOverflow;
+                reportElement.style.maxHeight = originalMaxHeight;
+
+                const link = document.createElement("a");
+                link.download = `تقرير_مغامرة_${childName}.png`;
+                link.href = canvas.toDataURL("image/png");
+                link.click();
+            });
+        }
+
+        // دالة تصدير البيانات كملف Excel (CSV) يدعم اللغة العربية بشكل كامل
+        function downloadExcelReport() {
+            let csvContent = "\uFEFF"; // لدعم الحروف العربية في إكسل
+            csvContent += `تقرير مغامرة البطل:,,${childName},\n`;
+            csvContent += `إجمالي النقاط:,${totalPoints},نسبة النجاح:,${successRateVal}%\n`;
+            csvContent += `متوسط التردد:,${avgLatency} ثانية,,\n\n`;
+            
+            csvContent += "الموقف البيئي,مؤشر المعالجة البصرية,أخطاء التردد,الحالة المعرفية\n";
+            
+            questionData.forEach((q, idx) => {
+                let processingStatus = latencies[idx] < 4 ? "سريعة وتلقائية" : "متوسطة الحذر";
+                let cognitiveState = q.wrongCount === 0 ? "مرونة متكاملة" : "تطلب تلميح توجيهي";
+                csvContent += `"${q.title}","${processingStatus} (${latencies[idx]}ث)","${q.wrongCount}","${cognitiveState}"\n`;
+            });
+
+            let encodedUri = encodeURI("data:text/csv;charset=utf-8," + csvContent);
+            let link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", `تقرير_مغامرة_${childName}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>
